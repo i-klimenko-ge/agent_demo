@@ -1,0 +1,77 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    display: flex;
+    height: 100vh;
+}
+
+.left-column {
+    width: 30%;
+    padding: 10px;
+    border-right: 1px solid #ccc;
+    background-color: #f7f7f7;
+}
+
+.right-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+}
+
+.prompt {
+    padding: 5px;
+    margin-bottom: 5px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+}
+
+.prompt.active {
+    background-color: #d0ebff;
+}
+
+.tool-lists {
+    display: flex;
+    justify-content: space-between;
+}
+
+.tool-list {
+    list-style-type: none;
+    min-height: 100px;
+    border: 1px dashed #ccc;
+    padding: 5px;
+}
+
+.tool-list li {
+    padding: 2px;
+    border: 1px solid #aaa;
+    margin-bottom: 2px;
+    cursor: pointer;
+    background-color: #fff;
+}
+
+.chat-box {
+    flex: 1;
+    border: 1px solid #ccc;
+    overflow-y: auto;
+    padding: 5px;
+    margin-bottom: 10px;
+    background-color: #fff;
+}
+
+.message-box {
+    display: flex;
+}
+
+.message-box input {
+    flex: 1;
+    padding: 5px;
+}
+
+.message-box button {
+    padding: 5px 10px;
+}

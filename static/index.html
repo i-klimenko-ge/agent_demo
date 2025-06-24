@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Agent Demo</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="container">
+    <div class="left-column">
+        <h2>Prompts</h2>
+        <div id="prompts">
+            <div class="prompt active" data-name="Prompt 1">Prompt 1</div>
+            <div class="prompt" id="prompt2" data-name="Prompt 2">Prompt 2</div>
+        </div>
+        <h2>Tools</h2>
+        <div class="tool-lists">
+            <div>
+                <h3>Available</h3>
+                <ul id="availableTools" class="tool-list"></ul>
+            </div>
+            <div>
+                <h3>Selected</h3>
+                <ul id="selectedTools" class="tool-list"></ul>
+            </div>
+        </div>
+    </div>
+    <div class="right-column">
+        <div id="chat" class="chat-box"></div>
+        <div class="message-box">
+            <input type="text" id="messageInput" placeholder="Type a message" />
+            <button id="sendBtn">Send</button>
+        </div>
+    </div>
+</div>
+<script src="main.js"></script>
+</body>
+</html>
