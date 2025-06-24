@@ -1,4 +1,4 @@
-const availableTools = ["calculator", "search", "wikipedia", "weather"]; // sample tools
+let availableTools = [];
 
 function makeTool(name) {
     const div = document.createElement('div');
@@ -17,6 +17,7 @@ function makeTool(name) {
 
 function setupTools() {
     const avail = document.getElementById('available-tools');
+    avail.innerHTML = '';
     availableTools.forEach(t => avail.appendChild(makeTool(t)));
 
     const areas = [document.getElementById('available-tools'), document.getElementById('tools')];
@@ -29,6 +30,13 @@ function setupTools() {
             area.appendChild(tool);
         });
     });
+}
+
+async function fetchTools() {
+    const resp = await fetch('/tools');
+    const data = await resp.json();
+    availableTools = data.tools;
+    setupTools();
 }
 
 let ws;
@@ -55,8 +63,22 @@ function sendMessage() {
     history.value += `\nUser: ${userMsg}\n`;
 }
 
+function toggleExtraPrompt() {
+    const cb = document.getElementById('enable-extra');
+    const area = document.getElementById('extra-prompt');
+    if (cb.checked) {
+        area.classList.remove('inactive');
+        area.disabled = false;
+    } else {
+        area.classList.add('inactive');
+        area.disabled = true;
+    }
+}
+
 window.addEventListener('load', () => {
-    setupTools();
+    fetchTools();
     connect();
+    toggleExtraPrompt();
     document.getElementById('send-btn').addEventListener('click', sendMessage);
+    document.getElementById('enable-extra').addEventListener('change', toggleExtraPrompt);
 });
