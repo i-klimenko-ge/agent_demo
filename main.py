@@ -18,6 +18,7 @@ from tools import (
     read_webpage_tool,
     current_date_tool,
     calculator_tool,
+    send_email_tool,
     search_tool,
 )
 
@@ -32,6 +33,7 @@ TOOL_DEFS = [
     (read_webpage_tool, "просмотр страниц"),
     (current_date_tool, "текущая дата"),
     (calculator_tool, "калькулятор"),
+    (send_email_tool, "отправить email"),
 ]
 
 # List of tools for the UI. Each entry contains the tool name (which must match
