@@ -141,7 +141,13 @@ async def websocket_endpoint(websocket: WebSocket):
             data = await websocket.receive_text()
             payload = json.loads(data)
             user_msg = payload.get("userMsg", "")
-            tool_names = payload.get("tools") or [t[0].name for t in TOOL_DEFS]
+            tool_names = payload.get("tools", None)
+            if tool_names is None:
+                tool_names = [t[0].name for t in TOOL_DEFS]
+
+            system_prompt = payload.get("systemPrompt", "")
+            extra_prompt = payload.get("extraPrompt", "")
+            config["configurable"]["prompt"] = f"{system_prompt}{extra_prompt}"
             if waiting["status"]:
                 await answer_queue.put(user_msg)
                 continue
