@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Agent Demo</title>
+    <title>Демо агента</title>
     <style>
         body {
             font-family: "Segoe UI", Tahoma, sans-serif;
@@ -119,25 +119,25 @@
     </style>
 </head>
 <body>
-<h1>Agent Demo</h1>
+<h1>Демо агента</h1>
 <div id="container">
     <div id="left">
-        <label>System Prompt:</label>
+        <label>Системный промпт:</label>
         <textarea id="system-prompt"></textarea>
-        <label><input type="checkbox" id="enable-extra" checked> Additional Prompt:</label>
+        <label><input type="checkbox" id="enable-extra" checked> Дополнительный промпт:</label>
         <textarea id="extra-prompt"></textarea>
-        <h3>Available Tools</h3>
+        <h3>Доступные инструменты</h3>
         <div id="available-tools"></div>
-        <h3>Selected Tools</h3>
+        <h3>Выбранные инструменты</h3>
         <div id="tools"></div>
     </div>
     <div id="right">
-        <label>Chat History:</label>
+        <label>Чат:</label>
         <textarea id="history" readonly></textarea>
-        <label>User Message:</label>
+        <label>Сообщение:</label>
         <div id="user-input">
             <input type="text" id="user-msg" />
-            <button id="send-btn">Send</button>
+            <button id="send-btn">Отправить</button>
         </div>
     </div>
 </div>
