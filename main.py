@@ -111,6 +111,7 @@ async def websocket_endpoint(websocket: WebSocket):
             msg = step["messages"][-1]
             if msg in conversation["messages"]:
                 continue
+            conversation["messages"].append(msg)
             if getattr(msg, "name", "") in ["provide_answer_tool", "question_user_tool"]:
                 continue
             if isinstance(msg, AIMessage):
@@ -126,7 +127,6 @@ async def websocket_endpoint(websocket: WebSocket):
                     websocket.send_text(getattr(msg, "content", str(msg)) + "\n"),
                     loop,
                 )
-            conversation["messages"].append(msg)
 
     try:
         while True:
