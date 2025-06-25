@@ -94,7 +94,5 @@ from langchain_tavily import TavilySearch
 import smtplib
 from email.mime.text import MIMEText
 
-if not os.environ.get("TAVILY_API_KEY"):
-    os.environ["TAVILY_API_KEY"] = "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"
-    
 search_tool = TavilySearch(max_results=3)
+search_tool.name = "search_tool"
