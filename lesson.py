@@ -68,6 +68,8 @@ while True:
             # TODO: for first and last message. Maybe it shold made another way
             if msg in conversation["messages"]:
                 continue
+            if msg.name in ["provide_answer_tool", "question_user_tool"]:
+                continue
 
             if isinstance(msg, AIMessage):
                 print(f"{Fore.YELLOW}{msg.content}{Style.RESET_ALL}")
