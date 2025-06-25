@@ -7,7 +7,13 @@ from fastapi.staticfiles import StaticFiles
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-TOOLS = ["калькулятор", "поиск в интернете", "поиск в документации", "просмотр страниц", "ответ пользователю"]
+TOOLS = [
+    {"name": "calculator", "label": "калькулятор"},
+    {"name": "web_search", "label": "поиск в интернете"},
+    {"name": "docs_search", "label": "поиск в документации"},
+    {"name": "page_view", "label": "просмотр страниц"},
+    {"name": "user_reply", "label": "ответ пользователю"},
+]
 
 with open("static/index.html", "r") as f:
     index_html = f.read()
