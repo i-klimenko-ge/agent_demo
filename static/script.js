@@ -46,6 +46,7 @@ async function fetchTools() {
 
 let ws;
 let pendingQuestion = false;
+let historyMarkdown = '';
 function connect() {
     ws = new WebSocket(`ws://${location.host}/ws`);
     ws.onmessage = event => {
@@ -53,13 +54,15 @@ function connect() {
         try {
             const data = JSON.parse(event.data);
             if (data.type === 'question') {
-                history.value += `\n[Agent asks]: ${data.text}\n`;
+                historyMarkdown += `\n**[Agent asks]:** ${data.text}\n`;
+                history.innerHTML = marked.parse(historyMarkdown);
                 history.scrollTop = history.scrollHeight;
                 pendingQuestion = true;
                 return;
             }
         } catch (e) {}
-        history.value += event.data;
+        historyMarkdown += event.data;
+        history.innerHTML = marked.parse(historyMarkdown);
         history.scrollTop = history.scrollHeight;
     };
 }
@@ -75,7 +78,8 @@ function sendMessage() {
     ws.send(JSON.stringify(payload));
     document.getElementById('user-msg').value = '';
     const history = document.getElementById('history');
-    history.value += `\nUser: ${userMsg}\n`;
+    historyMarkdown += `\n**User:** ${userMsg}\n`;
+    history.innerHTML = marked.parse(historyMarkdown);
     pendingQuestion = false;
 }
 
