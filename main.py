@@ -1,6 +1,8 @@
 import asyncio
 import json
 import os
+import time
+
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -76,24 +78,56 @@ async def websocket_endpoint(websocket: WebSocket):
     graph = create_agent()
     conversation = {"messages": []}
     config = {"configurable": {"prompt": None}}
+
+    loop = asyncio.get_running_loop()
+    answer_queue: asyncio.Queue[str] = asyncio.Queue()
+    waiting = {"status": False}
+
+    class QuestionTool:
+        name = "question_user_tool"
+        description = "Ask user a follow-up question"
+
+        def invoke(self, args):
+            question = args if isinstance(args, str) else args.get("question", "")
+            waiting["status"] = True
+            asyncio.run_coroutine_threadsafe(
+                websocket.send_text(json.dumps({"type": "question", "text": question})),
+                loop,
+            )
+            answer = asyncio.run_coroutine_threadsafe(answer_queue.get(), loop).result()
+            waiting["status"] = False
+            return {"answer": answer}
+
+    import nodes
+    nodes.tools_by_name["question_user_tool"] = QuestionTool()
+
+    def run_graph(user_input: str):
+        conversation["messages"].append(HumanMessage(content=user_input))
+        stream = graph.stream(conversation, stream_mode="values", config=config)
+        for step in stream:
+            msg = step["messages"][-1]
+            if msg in conversation["messages"]:
+                continue
+            if isinstance(msg, AIMessage):
+                for token in msg.content.split():
+                    asyncio.run_coroutine_threadsafe(websocket.send_text(token + " "), loop)
+                    time.sleep(0.05)
+                asyncio.run_coroutine_threadsafe(websocket.send_text("\n"), loop)
+            else:
+                asyncio.run_coroutine_threadsafe(
+                    websocket.send_text(getattr(msg, "content", str(msg)) + "\n"),
+                    loop,
+                )
+            conversation["messages"].append(msg)
+
     try:
         while True:
             data = await websocket.receive_text()
             payload = json.loads(data)
             user_msg = payload.get("userMsg", "")
-            conversation["messages"].append(HumanMessage(content=user_msg))
-            stream = graph.stream(conversation, stream_mode="values", config=config)
-            for step in stream:
-                msg = step["messages"][-1]
-                if msg in conversation["messages"]:
-                    continue
-                if isinstance(msg, AIMessage):
-                    for token in msg.content.split():
-                        await websocket.send_text(token + " ")
-                        await asyncio.sleep(0.05)
-                    await websocket.send_text("\n")
-                else:
-                    await websocket.send_text(getattr(msg, "content", str(msg)) + "\n")
-                conversation["messages"].append(msg)
+            if waiting["status"]:
+                await answer_queue.put(user_msg)
+                continue
+            await asyncio.to_thread(run_graph, user_msg)
     except WebSocketDisconnect:
         pass

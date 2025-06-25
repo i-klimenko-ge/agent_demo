@@ -45,10 +45,20 @@ async function fetchTools() {
 }
 
 let ws;
+let pendingQuestion = false;
 function connect() {
     ws = new WebSocket(`ws://${location.host}/ws`);
     ws.onmessage = event => {
         const history = document.getElementById('history');
+        try {
+            const data = JSON.parse(event.data);
+            if (data.type === 'question') {
+                history.value += `\n[Agent asks]: ${data.text}\n`;
+                history.scrollTop = history.scrollHeight;
+                pendingQuestion = true;
+                return;
+            }
+        } catch (e) {}
         history.value += event.data;
         history.scrollTop = history.scrollHeight;
     };
@@ -66,6 +76,7 @@ function sendMessage() {
     document.getElementById('user-msg').value = '';
     const history = document.getElementById('history');
     history.value += `\nUser: ${userMsg}\n`;
+    pendingQuestion = false;
 }
 
 function toggleExtraPrompt() {
