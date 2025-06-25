@@ -47,7 +47,7 @@ with open("static/index.html", "r") as f:
     index_html = f.read()
 
 
-def create_agent(tools_by_name=None):
+def create_agent(tool_names=None, tools_by_name=None):
     api_key = os.getenv("GIGACHAT_API_KEY")
     model = GigaChat(
         credentials=api_key,
@@ -57,9 +57,17 @@ def create_agent(tools_by_name=None):
         verify_ssl_certs=False,
         profanity_check=False,
     )
-    # Bind exactly the same tools that are advertised via the `/tools` endpoint
-    tools_list = [tool for tool, _ in TOOL_DEFS]
+    # Bind exactly the tools requested by the UI (or all of them by default)
+    if tool_names is None:
+        tool_names = [tool.name for tool, _ in TOOL_DEFS]
+    tools_list = [tool for tool, _ in TOOL_DEFS if tool.name in tool_names]
     model = model.bind_tools(tools_list)
+
+    if tools_by_name is None:
+        from nodes import tools_by_name as base_tools
+        tools_by_name = base_tools
+    tools_by_name = {name: t for name, t in tools_by_name.items() if name in tool_names}
+
     return get_graph(model, tools_by_name=tools_by_name)
 
 
@@ -100,13 +108,13 @@ async def websocket_endpoint(websocket: WebSocket):
     tools_dict = nodes.tools_by_name.copy()
     tools_dict["question_user_tool"] = QuestionTool()
 
-    graph = create_agent(tools_by_name=tools_dict)
     conversation = {"messages": []}
     config = {"configurable": {"prompt": None}}
 
-    def run_graph(user_input: str):
+    def run_graph(user_input: str, tool_names):
+        local_graph = create_agent(tool_names=tool_names, tools_by_name=tools_dict)
         conversation["messages"].append(HumanMessage(content=user_input))
-        stream = graph.stream(conversation, stream_mode="values", config=config)
+        stream = local_graph.stream(conversation, stream_mode="values", config=config)
         for step in stream:
             msg = step["messages"][-1]
             if msg in conversation["messages"]:
@@ -133,9 +141,10 @@ async def websocket_endpoint(websocket: WebSocket):
             data = await websocket.receive_text()
             payload = json.loads(data)
             user_msg = payload.get("userMsg", "")
+            tool_names = payload.get("tools") or [t[0].name for t in TOOL_DEFS]
             if waiting["status"]:
                 await answer_queue.put(user_msg)
                 continue
-            await asyncio.to_thread(run_graph, user_msg)
+            await asyncio.to_thread(run_graph, user_msg, tool_names)
     except WebSocketDisconnect:
         pass
