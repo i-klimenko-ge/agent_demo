@@ -109,13 +109,15 @@ async def websocket_endpoint(websocket: WebSocket):
             msg = step["messages"][-1]
             if msg in conversation["messages"]:
                 continue
+            if getattr(msg, "name", "") in ["provide_answer_tool", "question_user_tool"]:
+                continue
             if isinstance(msg, AIMessage):
                 for token in re.split(r'(\s+)', msg.content):
                     if token:
                         asyncio.run_coroutine_threadsafe(
                             websocket.send_text(token), loop
                         )
-                        time.sleep(0.05)
+                        time.sleep(0.02)
                 asyncio.run_coroutine_threadsafe(websocket.send_text("\n"), loop)
             else:
                 asyncio.run_coroutine_threadsafe(
