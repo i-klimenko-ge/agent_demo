@@ -65,8 +65,34 @@ def calculator_tool(expression: Annotated[str, "Выражение для выч
     except Exception as e:
         return {"error": str(e)}
 
+@tool
+def send_email_tool(
+    recipient: Annotated[str, "email получателя"],
+    subject: Annotated[str, "тема письма"],
+    body: Annotated[str, "текст письма"],
+) -> dict:
+    """Отправляет email через SMTP Gmail."""
+    user = os.environ.get("GMAIL_USER")
+    password = os.environ.get("GMAIL_PASSWORD")
+    if not user or not password:
+        return {"error": "GMAIL_USER or GMAIL_PASSWORD not set"}
+
+    msg = MIMEText(body)
+    msg["Subject"] = subject
+    msg["From"] = user
+    msg["To"] = recipient
+    try:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(user, password)
+            server.sendmail(user, [recipient], msg.as_string())
+        return {"status": "sent"}
+    except Exception as e:
+        return {"error": str(e)}
+
 import os
 from langchain_tavily import TavilySearch
+import smtplib
+from email.mime.text import MIMEText
 
 if not os.environ.get("TAVILY_API_KEY"):
     os.environ["TAVILY_API_KEY"] = "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"
