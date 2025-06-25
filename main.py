@@ -1,6 +1,7 @@
 import asyncio
 import json
 import os
+import re
 import time
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
@@ -109,9 +110,12 @@ async def websocket_endpoint(websocket: WebSocket):
             if msg in conversation["messages"]:
                 continue
             if isinstance(msg, AIMessage):
-                for token in msg.content.split():
-                    asyncio.run_coroutine_threadsafe(websocket.send_text(token + " "), loop)
-                    time.sleep(0.05)
+                for token in re.split(r'(\s+)', msg.content):
+                    if token:
+                        asyncio.run_coroutine_threadsafe(
+                            websocket.send_text(token), loop
+                        )
+                        time.sleep(0.05)
                 asyncio.run_coroutine_threadsafe(websocket.send_text("\n"), loop)
             else:
                 asyncio.run_coroutine_threadsafe(
