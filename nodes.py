@@ -6,7 +6,18 @@ from tools import provide_answer_tool, question_user_tool, search_rag_tool, read
 from prompts import create_system_prompt, get_react_instructions
 
 # Map name → tool
-tools_by_name = {tool.name: tool for tool in [provide_answer_tool, question_user_tool, search_rag_tool, read_webpage_tool, current_date_tool, calculator_tool, search_tool]}
+tools_by_name = {
+    tool.name: tool
+    for tool in [
+        provide_answer_tool,
+        question_user_tool,
+        search_rag_tool,
+        read_webpage_tool,
+        current_date_tool,
+        calculator_tool,
+        search_tool,
+    ]
+}
 
 def reflect_node(state: AgentState, config: RunnableConfig, model):
     """1) Reflect, plan & choose one tool call."""
@@ -27,7 +38,7 @@ def reflect_node(state: AgentState, config: RunnableConfig, model):
 
     return {"messages": [response]}
 
-def use_tool_node(state: AgentState):
+def use_tool_node(state: AgentState, tools_by_name):
     """2) Execute the tool call chosen in reflect_node."""
     outputs = []
     last = state["messages"][-1]
