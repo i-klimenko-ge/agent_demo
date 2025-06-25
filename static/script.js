@@ -75,10 +75,16 @@ function toggleExtraPrompt() {
     }
 }
 
-window.addEventListener('load', () => {
-    fetchTools();
-    connect();
-    toggleExtraPrompt();
-    document.getElementById('send-btn').addEventListener('click', sendMessage);
-    document.getElementById('enable-extra').addEventListener('change', toggleExtraPrompt);
-});
+    window.addEventListener('load', () => {
+        fetchTools();
+        connect();
+        toggleExtraPrompt();
+        document.getElementById('send-btn').addEventListener('click', sendMessage);
+        document.getElementById('user-msg').addEventListener('keydown', e => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+        document.getElementById('enable-extra').addEventListener('change', toggleExtraPrompt);
+    });
