@@ -47,7 +47,7 @@ with open("static/index.html", "r") as f:
     index_html = f.read()
 
 
-def create_agent():
+def create_agent(tools_by_name=None):
     api_key = os.getenv("GIGACHAT_API_KEY")
     model = GigaChat(
         credentials=api_key,
@@ -60,7 +60,7 @@ def create_agent():
     # Bind exactly the same tools that are advertised via the `/tools` endpoint
     tools_list = [tool for tool, _ in TOOL_DEFS]
     model = model.bind_tools(tools_list)
-    return get_graph(model)
+    return get_graph(model, tools_by_name=tools_by_name)
 
 
 @app.get("/")
@@ -76,9 +76,6 @@ async def get_tools():
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
-    graph = create_agent()
-    conversation = {"messages": []}
-    config = {"configurable": {"prompt": None}}
 
     loop = asyncio.get_running_loop()
     answer_queue: asyncio.Queue[str] = asyncio.Queue()
@@ -100,7 +97,12 @@ async def websocket_endpoint(websocket: WebSocket):
             return {"answer": answer}
 
     import nodes
-    nodes.tools_by_name["question_user_tool"] = QuestionTool()
+    tools_dict = nodes.tools_by_name.copy()
+    tools_dict["question_user_tool"] = QuestionTool()
+
+    graph = create_agent(tools_by_name=tools_dict)
+    conversation = {"messages": []}
+    config = {"configurable": {"prompt": None}}
 
     def run_graph(user_input: str):
         conversation["messages"].append(HumanMessage(content=user_input))
