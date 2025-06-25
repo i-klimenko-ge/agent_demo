@@ -87,6 +87,16 @@
             cursor: pointer;
         }
 
+        #reset-btn {
+            height: 40px;
+            background: #2f74c0;
+            border: none;
+            color: #fff;
+            padding: 0 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
         #retry-btn {
             height: 40px;
             background: #2f74c0;
@@ -95,6 +105,11 @@
             padding: 0 15px;
             border-radius: 4px;
             cursor: pointer;
+        }
+
+        #retry-btn:disabled {
+            opacity: 0.5;
+            cursor: default;
         }
 
         #tools,
@@ -146,7 +161,7 @@
 <body>
 <div id="header">
     <h1>Демо агента</h1>
-    <button id="retry-btn">Переподключиться</button>
+    <button id="reset-btn">Переподключиться</button>
 </div>
 <div id="container">
     <div id="left">
@@ -213,6 +228,7 @@
         <div id="user-input">
             <input type="text" id="user-msg" />
             <button id="send-btn">Отправить</button>
+            <button id="retry-btn" disabled>Повторить</button>
         </div>
     </div>
 </div>
