@@ -1,15 +1,18 @@
 let availableTools = [];
 
-function makeTool(name) {
+function makeTool(tool) {
     const div = document.createElement('div');
     div.className = 'tool';
-    div.textContent = name;
+    div.textContent = tool.label;
+    div.dataset.name = tool.name;
     div.draggable = true;
     div.addEventListener('dragstart', e => {
-        e.dataTransfer.setData('text/plain', name);
+        e.dataTransfer.setData('text/plain', tool.name);
     });
     div.addEventListener('click', () => {
-        const parent = div.parentElement.id === 'available-tools' ? document.getElementById('tools') : document.getElementById('available-tools');
+        const parent = div.parentElement.id === 'available-tools'
+            ? document.getElementById('tools')
+            : document.getElementById('available-tools');
         parent.appendChild(div);
     });
     return div;
@@ -26,8 +29,10 @@ function setupTools() {
         area.addEventListener('drop', e => {
             e.preventDefault();
             const name = e.dataTransfer.getData('text/plain');
-            const tool = [...document.querySelectorAll('.tool')].find(d => d.textContent === name);
-            area.appendChild(tool);
+            const tool = [...document.querySelectorAll('.tool')].find(d => d.dataset.name === name);
+            if (tool) {
+                area.appendChild(tool);
+            }
         });
     });
 }
@@ -55,7 +60,7 @@ function sendMessage() {
     const extraEnabled = document.getElementById('enable-extra').checked;
     const extraPrompt = extraEnabled ? document.getElementById('extra-prompt').value : '';
     const userMsg = document.getElementById('user-msg').value;
-    const tools = [...document.getElementById('tools').children].map(d => d.textContent);
+    const tools = [...document.getElementById('tools').children].map(d => d.dataset.name);
     const payload = {systemPrompt, extraPrompt, userMsg, tools};
     ws.send(JSON.stringify(payload));
     document.getElementById('user-msg').value = '';
