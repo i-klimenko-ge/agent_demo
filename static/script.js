@@ -50,7 +50,6 @@ let historyMarkdown = '';
 let retryBtn;
 function connect() {
     ws = new WebSocket(`ws://${location.host}/ws`);
-    if (retryBtn) retryBtn.disabled = true;
     ws.onmessage = event => {
         const history = document.getElementById('history');
         try {
@@ -69,13 +68,9 @@ function connect() {
     };
     ws.onclose = () => {
         const history = document.getElementById('history');
-        historyMarkdown += '\n**[System]:** Соединение прервано. Нажмите \"Переподключиться\".\n';
+        historyMarkdown += '\n**[System]:** Соединение прервано. Нажмите "Переподключиться".\n';
         history.innerHTML = marked.parse(historyMarkdown);
         history.scrollTop = history.scrollHeight;
-        if (retryBtn) retryBtn.disabled = false;
-    };
-    ws.onerror = () => {
-        if (retryBtn) retryBtn.disabled = false;
     };
 }
 
@@ -121,8 +116,12 @@ function toggleExtraPrompt() {
         document.getElementById('enable-extra').addEventListener('change', toggleExtraPrompt);
         retryBtn = document.getElementById('retry-btn');
         retryBtn.addEventListener('click', () => {
-            if (!ws || ws.readyState === WebSocket.CLOSED) {
-                connect();
+            if (ws) {
+                ws.onclose = null;
+                ws.close();
             }
+            historyMarkdown = '';
+            document.getElementById('history').innerHTML = '';
+            connect();
         });
     });
