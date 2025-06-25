@@ -47,8 +47,10 @@ async function fetchTools() {
 let ws;
 let pendingQuestion = false;
 let historyMarkdown = '';
+let retryBtn;
 function connect() {
     ws = new WebSocket(`ws://${location.host}/ws`);
+    if (retryBtn) retryBtn.disabled = true;
     ws.onmessage = event => {
         const history = document.getElementById('history');
         try {
@@ -64,6 +66,16 @@ function connect() {
         historyMarkdown += event.data;
         history.innerHTML = marked.parse(historyMarkdown);
         history.scrollTop = history.scrollHeight;
+    };
+    ws.onclose = () => {
+        const history = document.getElementById('history');
+        historyMarkdown += '\n**[System]:** Соединение прервано. Нажмите \"Переподключиться\".\n';
+        history.innerHTML = marked.parse(historyMarkdown);
+        history.scrollTop = history.scrollHeight;
+        if (retryBtn) retryBtn.disabled = false;
+    };
+    ws.onerror = () => {
+        if (retryBtn) retryBtn.disabled = false;
     };
 }
 
@@ -107,4 +119,10 @@ function toggleExtraPrompt() {
             }
         });
         document.getElementById('enable-extra').addEventListener('change', toggleExtraPrompt);
+        retryBtn = document.getElementById('retry-btn');
+        retryBtn.addEventListener('click', () => {
+            if (!ws || ws.readyState === WebSocket.CLOSED) {
+                connect();
+            }
+        });
     });

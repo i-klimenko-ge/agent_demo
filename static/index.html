@@ -87,6 +87,21 @@
             cursor: pointer;
         }
 
+        #retry-btn {
+            height: 40px;
+            background: #2f74c0;
+            border: none;
+            color: #fff;
+            padding: 0 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #retry-btn:disabled {
+            opacity: 0.5;
+            cursor: default;
+        }
+
         #tools,
         #available-tools {
             display: flex;
@@ -194,6 +209,7 @@
         <div id="user-input">
             <input type="text" id="user-msg" />
             <button id="send-btn">Отправить</button>
+            <button id="retry-btn" disabled>Переподключиться</button>
         </div>
     </div>
 </div>
