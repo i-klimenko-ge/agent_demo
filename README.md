@@ -18,8 +18,14 @@ This is a simple demonstration of a web UI communicating with a Python backend t
    ```
 2. Start the server:
    ```bash
-   uvicorn server:app --reload
+   uvicorn main:app --reload
    ```
 3. Open your browser at [http://localhost:8000](http://localhost:8000) to see the UI.
 
 When you send a message the backend will stream a dummy response word by word so the chat history updates gradually.
+
+## Tools
+
+The list shown in the UI comes from the same tool definitions that the backend
+binds to the language model. Update `TOOL_DEFS` in `main.py` to add or remove
+tools—the `/tools` endpoint and the bound tools will stay in sync.

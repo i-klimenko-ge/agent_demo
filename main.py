@@ -18,16 +18,27 @@ from tools import (
     search_tool,
 )
 
+# Tool objects paired with human readable labels. This single source is used
+# both for binding tools to the model and for populating the `/tools` endpoint
+# so that the UI and backend stay in sync.
+TOOL_DEFS = [
+    (provide_answer_tool, "ответ пользователю"),
+    (question_user_tool, "уточнить у пользователя"),
+    (search_rag_tool, "поиск в документации"),
+    (search_tool, "поиск в интернете"),
+    (read_webpage_tool, "просмотр страниц"),
+    (current_date_tool, "текущая дата"),
+    (calculator_tool, "калькулятор"),
+]
+
+# List of tools for the UI. Each entry contains the tool name (which must match
+# the bound tool) and a user friendly label.
+TOOLS = [
+    {"name": tool.name, "label": label} for tool, label in TOOL_DEFS
+]
+
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
-
-TOOLS = [
-    {"name": "calculator", "label": "калькулятор"},
-    {"name": "web_search", "label": "поиск в интернете"},
-    {"name": "docs_search", "label": "поиск в документации"},
-    {"name": "page_view", "label": "просмотр страниц"},
-    {"name": "user_reply", "label": "ответ пользователю"},
-]
 
 with open("static/index.html", "r") as f:
     index_html = f.read()
@@ -43,15 +54,8 @@ def create_agent():
         verify_ssl_certs=False,
         profanity_check=False,
     )
-    tools_list = [
-        provide_answer_tool,
-        question_user_tool,
-        search_rag_tool,
-        search_tool,
-        read_webpage_tool,
-        current_date_tool,
-        calculator_tool,
-    ]
+    # Bind exactly the same tools that are advertised via the `/tools` endpoint
+    tools_list = [tool for tool, _ in TOOL_DEFS]
     model = model.bind_tools(tools_list)
     return get_graph(model)
 
