@@ -44,17 +44,28 @@
             flex: 1;
             display: flex;
             flex-direction: column;
+            min-height: 0;
+            min-width: 0;
         }
 
         #history {
-            height: 300px;
             flex: 1;
             overflow-y: auto;
+            overflow-x: hidden;
+            min-height: 0;
+            min-width: 0;
             background: #40414f;
             color: #e6e6e6;
             border: 1px solid #555;
             padding: 10px;
             border-radius: 4px;
+            white-space: pre-wrap;
+            word-break: break-word;
+            overflow-wrap: anywhere;
+        }
+
+        #history pre,
+        #history code {
             white-space: pre-wrap;
             word-break: break-word;
             overflow-wrap: anywhere;
