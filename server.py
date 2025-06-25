@@ -7,7 +7,13 @@ from fastapi.staticfiles import StaticFiles
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-TOOLS = ["calculator", "search", "wikipedia", "weather"]
+TOOLS = [
+    {"name": "calculator", "label": "калькулятор"},
+    {"name": "web_search", "label": "поиск в интернете"},
+    {"name": "docs_search", "label": "поиск в документации"},
+    {"name": "page_view", "label": "просмотр страниц"},
+    {"name": "user_reply", "label": "ответ пользователю"},
+]
 
 with open("static/index.html", "r") as f:
     index_html = f.read()
@@ -42,7 +48,7 @@ async def websocket_endpoint(websocket: WebSocket):
             for line in lines:
                 for word in line.split():
                     await websocket.send_text(word + " ")
-                    await asyncio.sleep(0.2)
+                    await asyncio.sleep(0.01)
                 await websocket.send_text("\n")
             for _ in range(3):
                 dummy = "lorem ipsum dolor sit amet consectetur".split()
