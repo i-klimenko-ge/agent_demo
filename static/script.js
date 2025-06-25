@@ -47,8 +47,14 @@ async function fetchTools() {
 let ws;
 let pendingQuestion = false;
 let historyMarkdown = '';
-function connect() {
+let resetBtn;
+let retryBtn;
+let lastPayload = null;
+function connect(onOpen) {
     ws = new WebSocket(`ws://${location.host}/ws`);
+    if (onOpen) {
+        ws.addEventListener('open', onOpen, { once: true });
+    }
     ws.onmessage = event => {
         const history = document.getElementById('history');
         try {
@@ -65,6 +71,13 @@ function connect() {
         history.innerHTML = marked.parse(historyMarkdown);
         history.scrollTop = history.scrollHeight;
     };
+    ws.onclose = () => {
+        const history = document.getElementById('history');
+        historyMarkdown += '\n**[System]:** Соединение прервано. Нажмите \"Повторить\".\n';
+        history.innerHTML = marked.parse(historyMarkdown);
+        history.scrollTop = history.scrollHeight;
+        retryBtn.disabled = false;
+    };
 }
 
 function sendMessage() {
@@ -74,13 +87,14 @@ function sendMessage() {
     const extraPrompt = extraEnabled ? document.getElementById('extra-prompt').value : '';
     const userMsg = document.getElementById('user-msg').value;
     const tools = [...document.getElementById('tools').children].map(d => d.dataset.name);
-    const payload = {systemPrompt, extraPrompt, userMsg, tools};
-    ws.send(JSON.stringify(payload));
+    lastPayload = {systemPrompt, extraPrompt, userMsg, tools};
+    ws.send(JSON.stringify(lastPayload));
     document.getElementById('user-msg').value = '';
     const history = document.getElementById('history');
     historyMarkdown += `\n**User:** ${userMsg}\n`;
     history.innerHTML = marked.parse(historyMarkdown);
     pendingQuestion = false;
+    retryBtn.disabled = true;
 }
 
 function toggleExtraPrompt() {
@@ -107,4 +121,32 @@ function toggleExtraPrompt() {
             }
         });
         document.getElementById('enable-extra').addEventListener('change', toggleExtraPrompt);
+        retryBtn = document.getElementById('retry-btn');
+        retryBtn.addEventListener('click', () => {
+            if (!lastPayload) return;
+            const sendPayload = () => {
+                ws.send(JSON.stringify(lastPayload));
+                const history = document.getElementById('history');
+                historyMarkdown += `\n**User (повтор):** ${lastPayload.userMsg}\n`;
+                history.innerHTML = marked.parse(historyMarkdown);
+                retryBtn.disabled = true;
+            };
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                connect(() => sendPayload());
+            } else {
+                sendPayload();
+            }
+        });
+        resetBtn = document.getElementById('reset-btn');
+        resetBtn.addEventListener('click', () => {
+            if (ws) {
+                ws.onclose = null;
+                ws.close();
+            }
+            historyMarkdown = '';
+            document.getElementById('history').innerHTML = '';
+            lastPayload = null;
+            retryBtn.disabled = true;
+            connect();
+        });
     });

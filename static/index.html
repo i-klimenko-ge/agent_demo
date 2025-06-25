@@ -87,6 +87,31 @@
             cursor: pointer;
         }
 
+        #reset-btn {
+            height: 40px;
+            background: #2f74c0;
+            border: none;
+            color: #fff;
+            padding: 0 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #retry-btn {
+            height: 40px;
+            background: #2f74c0;
+            border: none;
+            color: #fff;
+            padding: 0 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #retry-btn:disabled {
+            opacity: 0.5;
+            cursor: default;
+        }
+
         #tools,
         #available-tools {
             display: flex;
@@ -118,17 +143,26 @@
             background: #2d2d2d;
         }
 
-        h1 {
-            margin: 0;
-            padding: 20px;
+        #header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             background: #202123;
+            padding: 20px;
+        }
+
+        #header h1 {
+            margin: 0;
             color: #fff;
             font-size: 1.5em;
         }
     </style>
 </head>
 <body>
-<h1>Демо агента</h1>
+<div id="header">
+    <h1>Демо агента</h1>
+    <button id="reset-btn">Переподключиться</button>
+</div>
 <div id="container">
     <div id="left">
         <label>Системный промпт:</label>
@@ -194,6 +228,7 @@
         <div id="user-input">
             <input type="text" id="user-msg" />
             <button id="send-btn">Отправить</button>
+            <button id="retry-btn" disabled>Повторить</button>
         </div>
     </div>
 </div>
