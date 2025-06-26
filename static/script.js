@@ -3,34 +3,48 @@ let availableTools = [];
 function makeTool(tool) {
     const div = document.createElement('div');
     div.className = 'tool';
-    div.textContent = tool.label;
+    if (tool.required) {
+        div.classList.add('required');
+    }
+    div.textContent = tool.label + (tool.required ? ' *' : '');
     div.dataset.name = tool.name;
-    div.draggable = true;
-    div.addEventListener('dragstart', e => {
-        e.dataTransfer.setData('text/plain', tool.name);
-    });
-    div.addEventListener('click', () => {
-        const parent = div.parentElement.id === 'available-tools'
-            ? document.getElementById('tools')
-            : document.getElementById('available-tools');
-        parent.appendChild(div);
-    });
+    if (!tool.required) {
+        div.draggable = true;
+        div.addEventListener('dragstart', e => {
+            e.dataTransfer.setData('text/plain', tool.name);
+        });
+        div.addEventListener('click', () => {
+            const parent = div.parentElement.id === 'available-tools'
+                ? document.getElementById('tools')
+                : document.getElementById('available-tools');
+            parent.appendChild(div);
+        });
+    }
     return div;
 }
 
 function setupTools() {
     const avail = document.getElementById('available-tools');
+    const active = document.getElementById('tools');
     avail.innerHTML = '';
-    availableTools.forEach(t => avail.appendChild(makeTool(t)));
+    active.innerHTML = '';
+    availableTools.forEach(t => {
+        const elem = makeTool(t);
+        if (t.required) {
+            active.appendChild(elem);
+        } else {
+            avail.appendChild(elem);
+        }
+    });
 
-    const areas = [document.getElementById('available-tools'), document.getElementById('tools')];
+    const areas = [avail, active];
     areas.forEach(area => {
         area.addEventListener('dragover', e => e.preventDefault());
         area.addEventListener('drop', e => {
             e.preventDefault();
             const name = e.dataTransfer.getData('text/plain');
             const tool = [...document.querySelectorAll('.tool')].find(d => d.dataset.name === name);
-            if (tool) {
+            if (tool && !tool.classList.contains('required')) {
                 area.appendChild(tool);
             }
         });

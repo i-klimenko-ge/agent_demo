@@ -30,20 +30,26 @@ from tools import (
 # both for binding tools to the model and for populating the `/tools` endpoint
 # so that the UI and backend stay in sync.
 TOOL_DEFS = [
-    (provide_answer_tool, "ответ пользователю"),
-    (question_user_tool, "уточнить у пользователя"),
-    (search_rag_tool, "поиск в документации"),
-    (search_tool, "поиск в интернете"),
-    (read_webpage_tool, "просмотр страниц"),
-    (current_date_tool, "текущая дата"),
-    (calculator_tool, "калькулятор"),
-    (send_email_tool, "отправить email"),
+    # (tool_object, label, required)
+    (provide_answer_tool, "ответ пользователю", True),
+    (question_user_tool, "уточнить у пользователя", True),
+    (search_rag_tool, "поиск в документации", False),
+    (search_tool, "поиск в интернете", False),
+    (read_webpage_tool, "просмотр страниц", False),
+    (current_date_tool, "текущая дата", False),
+    (calculator_tool, "калькулятор", False),
+    (send_email_tool, "отправить email", False),
 ]
 
 # List of tools for the UI. Each entry contains the tool name (which must match
 # the bound tool) and a user friendly label.
 TOOLS = [
-    {"name": tool.name, "label": label} for tool, label in TOOL_DEFS
+    {
+        "name": tool.name,
+        "label": label,
+        "required": required,
+    }
+    for tool, label, required in TOOL_DEFS
 ]
 
 app = FastAPI()
@@ -65,8 +71,11 @@ def create_agent(tool_names=None, tools_by_name=None):
     )
     # Bind exactly the tools requested by the UI (or all of them by default)
     if tool_names is None:
-        tool_names = [tool.name for tool, _ in TOOL_DEFS]
-    tools_list = [tool for tool, _ in TOOL_DEFS if tool.name in tool_names]
+        tool_names = [tool.name for tool, _, _ in TOOL_DEFS]
+    # ensure required tools are always enabled
+    required = [tool.name for tool, _, req in TOOL_DEFS if req]
+    tool_names = list(dict.fromkeys(tool_names + required))
+    tools_list = [tool for tool, _, _ in TOOL_DEFS if tool.name in tool_names]
     model = model.bind_tools(tools_list)
 
     if tools_by_name is None:
@@ -150,6 +159,8 @@ async def websocket_endpoint(websocket: WebSocket):
             tool_names = payload.get("tools", None)
             if tool_names is None:
                 tool_names = [t[0].name for t in TOOL_DEFS]
+            required = [t[0].name for t in TOOL_DEFS if t[2]]
+            tool_names = list(dict.fromkeys(tool_names + required))
 
             system_prompt = payload.get("systemPrompt", "")
             extra_prompt = payload.get("extraPrompt", "")
