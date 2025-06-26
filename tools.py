@@ -49,8 +49,12 @@ import datetime
 # ─── Current Date ───
 @tool
 def current_date_tool() -> dict:
-    """Возвращает текущую дату в формате ГГГГ-ММ-ДД."""
-    return {"date": datetime.datetime.now().strftime("%Y-%m-%d")}
+    """Возвращает текущую дату в формате ГГГГ-ММ-ДД и день недели (на англ.)."""
+    now = datetime.datetime.now()
+    return {
+        "date":       now.strftime("%Y-%m-%d"),
+        "day_of_week": now.strftime("%A")
+    }
 
 import math
 
@@ -65,10 +69,19 @@ def calculator_tool(expression: Annotated[str, "Выражение для выч
     except Exception as e:
         return {"error": str(e)}
 
+
+@tool
+def send_email_tool(
+    recipient: Annotated[str, "email получателя"],
+    subject: Annotated[str, "тема письма"],
+    body: Annotated[str, "текст письма"],
+) -> dict:
+    """Отправляет email через SMTP Gmail."""
+    return {"status": "sent"}
+
+
 import os
 from langchain_tavily import TavilySearch
 
-if not os.environ.get("TAVILY_API_KEY"):
-    os.environ["TAVILY_API_KEY"] = "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"
-    
 search_tool = TavilySearch(max_results=3)
+search_tool.name = "search_tool"

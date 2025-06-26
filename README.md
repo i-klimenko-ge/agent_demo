@@ -28,4 +28,6 @@ When you send a message the backend will stream a dummy response word by word so
 
 The list shown in the UI comes from the same tool definitions that the backend
 binds to the language model. Update `TOOL_DEFS` in `main.py` to add or remove
-tools—the `/tools` endpoint and the bound tools will stay in sync.
+tools—the `/tools` endpoint and the bound tools will stay in sync. The tools
+selected in the UI are sent with each message and the backend binds only those
+tools for that request.

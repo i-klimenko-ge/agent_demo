@@ -44,18 +44,31 @@
             flex: 1;
             display: flex;
             flex-direction: column;
+            min-height: 0;
+            min-width: 0;
         }
 
         #history {
-            height: 300px;
             flex: 1;
             overflow-y: auto;
+            overflow-x: hidden;
+            min-height: 0;
+            min-width: 0;
             background: #40414f;
             color: #e6e6e6;
             border: 1px solid #555;
             padding: 10px;
             border-radius: 4px;
             white-space: pre-wrap;
+            word-break: break-word;
+            overflow-wrap: anywhere;
+        }
+
+        #history pre,
+        #history code {
+            white-space: pre-wrap;
+            word-break: break-word;
+            overflow-wrap: anywhere;
         }
 
         #user-input {
@@ -85,6 +98,31 @@
             cursor: pointer;
         }
 
+        #reset-btn {
+            height: 40px;
+            background: #2f74c0;
+            border: none;
+            color: #fff;
+            padding: 0 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #retry-btn {
+            height: 40px;
+            background: #2f74c0;
+            border: none;
+            color: #fff;
+            padding: 0 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #retry-btn:disabled {
+            opacity: 0.5;
+            cursor: default;
+        }
+
         #tools,
         #available-tools {
             display: flex;
@@ -107,6 +145,11 @@
             color: #e6e6e6;
         }
 
+        .tool.required {
+            background: #5b5b5b;
+            cursor: default;
+        }
+
         .tool:hover {
             background: #4b4b4b;
         }
@@ -116,17 +159,26 @@
             background: #2d2d2d;
         }
 
-        h1 {
-            margin: 0;
-            padding: 20px;
+        #header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             background: #202123;
+            padding: 20px;
+        }
+
+        #header h1 {
+            margin: 0;
             color: #fff;
             font-size: 1.5em;
         }
     </style>
 </head>
 <body>
-<h1>Демо агента</h1>
+<div id="header">
+    <h1>Демо агента</h1>
+    <button id="reset-btn">Переподключиться</button>
+</div>
 <div id="container">
     <div id="left">
         <label>Системный промпт:</label>
@@ -137,7 +189,9 @@
   У вас есть доступ к нескольким инструментам (tools), пользуйтесь ими для ответа.
   Предоставляйте ответ пользователю после того, как найдете ответы на все заданные вопросы пользователя. Перед ответом убедитесь, что отвечаете именно на то, что было запрошено и отвечаете в полном объеме.
   Если не получилось найти ответ на вопрос пользователя, попробуйте разбить его на части и найти ответы на них.
-
+  Какие бы действия ты не совершал, всегда сообщи пользователю о своих результатах через инструмент предоставления ответа.
+  Не пытайся выполнять код на питоне, используй только предоставленные инструменты.
+  
   ## ВАЖНО! Обратите внимание, что один из инструментов должен быть использован обязательно! Отсутствие вызова инструмента приведет к поломке системы.</textarea>
         <label><input type="checkbox" id="enable-extra" checked> Дополнительный промпт:</label>
         <textarea id="extra-prompt">  ## Формат ответа
@@ -192,6 +246,7 @@
         <div id="user-input">
             <input type="text" id="user-msg" />
             <button id="send-btn">Отправить</button>
+            <button id="retry-btn" disabled>Повторить</button>
         </div>
     </div>
 </div>

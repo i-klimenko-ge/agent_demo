@@ -2,7 +2,16 @@ import json
 from langchain_core.messages import ToolMessage, SystemMessage, HumanMessage
 from langchain_core.runnables import RunnableConfig
 from state import AgentState
-from tools import provide_answer_tool, question_user_tool, search_rag_tool, read_webpage_tool, current_date_tool, calculator_tool, search_tool
+from tools import (
+    provide_answer_tool,
+    question_user_tool,
+    search_rag_tool,
+    read_webpage_tool,
+    current_date_tool,
+    calculator_tool,
+    send_email_tool,
+    search_tool,
+)
 from prompts import create_system_prompt, get_react_instructions
 
 # Map name → tool
@@ -15,6 +24,7 @@ tools_by_name = {
         read_webpage_tool,
         current_date_tool,
         calculator_tool,
+        send_email_tool,
         search_tool,
     ]
 }
