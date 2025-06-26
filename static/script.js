@@ -1,10 +1,11 @@
-let availableTools = [];
+let allTools = [];
 
 function makeTool(tool) {
     const div = document.createElement('div');
     div.className = 'tool';
     div.textContent = tool.label;
     div.dataset.name = tool.name;
+    div.dataset.required = tool.required ? 'true' : 'false';
     div.draggable = true;
     div.addEventListener('dragstart', e => {
         e.dataTransfer.setData('text/plain', tool.name);
@@ -13,6 +14,9 @@ function makeTool(tool) {
         const parent = div.parentElement.id === 'available-tools'
             ? document.getElementById('tools')
             : document.getElementById('available-tools');
+        if (div.dataset.required === 'true' && parent.id === 'available-tools') {
+            return;
+        }
         parent.appendChild(div);
     });
     return div;
@@ -20,8 +24,17 @@ function makeTool(tool) {
 
 function setupTools() {
     const avail = document.getElementById('available-tools');
+    const selected = document.getElementById('tools');
     avail.innerHTML = '';
-    availableTools.forEach(t => avail.appendChild(makeTool(t)));
+    selected.innerHTML = '';
+    allTools.forEach(t => {
+        const div = makeTool(t);
+        if (t.required) {
+            selected.appendChild(div);
+        } else {
+            avail.appendChild(div);
+        }
+    });
 
     const areas = [document.getElementById('available-tools'), document.getElementById('tools')];
     areas.forEach(area => {
@@ -31,6 +44,9 @@ function setupTools() {
             const name = e.dataTransfer.getData('text/plain');
             const tool = [...document.querySelectorAll('.tool')].find(d => d.dataset.name === name);
             if (tool) {
+                if (tool.dataset.required === 'true' && area.id === 'available-tools') {
+                    return;
+                }
                 area.appendChild(tool);
             }
         });
@@ -40,7 +56,7 @@ function setupTools() {
 async function fetchTools() {
     const resp = await fetch('/tools');
     const data = await resp.json();
-    availableTools = data.tools;
+    allTools = data.tools;
     setupTools();
 }
 

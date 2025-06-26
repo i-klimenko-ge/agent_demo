@@ -41,9 +41,15 @@ TOOL_DEFS = [
 ]
 
 # List of tools for the UI. Each entry contains the tool name (which must match
-# the bound tool) and a user friendly label.
+# the bound tool), a user friendly label and whether it is required.
+REQUIRED_TOOL_NAMES = {provide_answer_tool.name}
 TOOLS = [
-    {"name": tool.name, "label": label} for tool, label in TOOL_DEFS
+    {
+        "name": tool.name,
+        "label": label,
+        "required": tool.name in REQUIRED_TOOL_NAMES,
+    }
+    for tool, label in TOOL_DEFS
 ]
 
 app = FastAPI()
