@@ -29,14 +29,12 @@ function setupTools() {
     const active = document.getElementById('tools');
     avail.innerHTML = '';
     active.innerHTML = '';
-    availableTools.forEach(t => {
-        const elem = makeTool(t);
-        if (t.required) {
-            active.appendChild(elem);
-        } else {
-            avail.appendChild(elem);
-        }
-    });
+
+    const req = availableTools.filter(t => t.required);
+    const opt = availableTools.filter(t => !t.required);
+
+    req.forEach(t => active.appendChild(makeTool(t)));
+    opt.forEach(t => avail.appendChild(makeTool(t)));
 
     const areas = [avail, active];
     areas.forEach(area => {
