@@ -3,7 +3,8 @@ let availableTools = [];
 function makeTool(tool) {
     const div = document.createElement('div');
     div.className = 'tool';
-    div.textContent = tool.label;
+    if (tool.required) div.classList.add('required');
+    div.textContent = tool.label + (tool.required ? ' *' : '');
     div.dataset.name = tool.name;
     div.dataset.required = tool.required ? 'true' : 'false';
     div.draggable = !tool.required;
