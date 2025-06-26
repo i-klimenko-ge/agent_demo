@@ -1,14 +1,13 @@
 let availableTools = [];
+let requiredToolNames = [];
 
 function makeTool(tool) {
     const div = document.createElement('div');
     div.className = 'tool';
     if (tool.required) {
         div.classList.add('required');
-    }
-    div.textContent = tool.label + (tool.required ? ' *' : '');
-    div.dataset.name = tool.name;
-    if (!tool.required) {
+        div.draggable = false;
+    } else {
         div.draggable = true;
         div.addEventListener('dragstart', e => {
             e.dataTransfer.setData('text/plain', tool.name);
@@ -20,6 +19,8 @@ function makeTool(tool) {
             parent.appendChild(div);
         });
     }
+    div.textContent = tool.label + (tool.required ? ' *' : '');
+    div.dataset.name = tool.name;
     return div;
 }
 
@@ -55,6 +56,7 @@ async function fetchTools() {
     const resp = await fetch('/tools');
     const data = await resp.json();
     availableTools = data.tools;
+    requiredToolNames = availableTools.filter(t => t.required).map(t => t.name);
     setupTools();
 }
 
@@ -100,7 +102,8 @@ function sendMessage() {
     const extraEnabled = document.getElementById('enable-extra').checked;
     const extraPrompt = extraEnabled ? document.getElementById('extra-prompt').value : '';
     const userMsg = document.getElementById('user-msg').value;
-    const tools = [...document.getElementById('tools').children].map(d => d.dataset.name);
+    let tools = [...document.getElementById('tools').children].map(d => d.dataset.name);
+    tools = Array.from(new Set([...tools, ...requiredToolNames]));
     lastPayload = {systemPrompt, extraPrompt, userMsg, tools};
     ws.send(JSON.stringify(lastPayload));
     document.getElementById('user-msg').value = '';
