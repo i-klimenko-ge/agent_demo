@@ -23,21 +23,24 @@ from tools import (
 
 # Tool objects paired with human readable labels. This single source is used
 # both for binding tools to the model and for populating the `/tools` endpoint
-# so that the UI and backend stay in sync.
+# so that the UI and backend stay in sync.  Each entry may also specify that the
+# tool is required, meaning it must always be enabled in the UI.
 TOOL_DEFS = [
-    (provide_answer_tool, "ответ пользователю"),
-    (question_user_tool, "уточнить у пользователя"),
-    (search_rag_tool, "поиск в документации"),
-    (search_tool, "поиск в интернете"),
-    (read_webpage_tool, "просмотр страниц"),
-    (current_date_tool, "текущая дата"),
-    (calculator_tool, "калькулятор"),
+    {"tool": provide_answer_tool, "label": "ответ пользователю", "required": True},
+    {"tool": question_user_tool, "label": "уточнить у пользователя", "required": False},
+    {"tool": search_rag_tool, "label": "поиск в документации", "required": False},
+    {"tool": search_tool, "label": "поиск в интернете", "required": False},
+    {"tool": read_webpage_tool, "label": "просмотр страниц", "required": False},
+    {"tool": current_date_tool, "label": "текущая дата", "required": False},
+    {"tool": calculator_tool, "label": "калькулятор", "required": False},
 ]
 
 # List of tools for the UI. Each entry contains the tool name (which must match
-# the bound tool) and a user friendly label.
+# the bound tool), a user friendly label and the `required` flag so that the UI
+# can enforce it.
 TOOLS = [
-    {"name": tool.name, "label": label} for tool, label in TOOL_DEFS
+    {"name": entry["tool"].name, "label": entry["label"], "required": entry["required"]}
+    for entry in TOOL_DEFS
 ]
 
 app = FastAPI()
@@ -58,7 +61,7 @@ def create_agent(tools_by_name=None):
         profanity_check=False,
     )
     # Bind exactly the same tools that are advertised via the `/tools` endpoint
-    tools_list = [tool for tool, _ in TOOL_DEFS]
+    tools_list = [entry["tool"] for entry in TOOL_DEFS]
     model = model.bind_tools(tools_list)
     return get_graph(model, tools_by_name=tools_by_name)
 

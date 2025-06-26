@@ -5,23 +5,39 @@ function makeTool(tool) {
     div.className = 'tool';
     div.textContent = tool.label;
     div.dataset.name = tool.name;
-    div.draggable = true;
-    div.addEventListener('dragstart', e => {
-        e.dataTransfer.setData('text/plain', tool.name);
-    });
-    div.addEventListener('click', () => {
-        const parent = div.parentElement.id === 'available-tools'
-            ? document.getElementById('tools')
-            : document.getElementById('available-tools');
-        parent.appendChild(div);
-    });
+    div.dataset.required = tool.required ? 'true' : 'false';
+
+    if (!tool.required) {
+        div.draggable = true;
+        div.addEventListener('dragstart', e => {
+            e.dataTransfer.setData('text/plain', tool.name);
+        });
+        div.addEventListener('click', () => {
+            const parent = div.parentElement.id === 'available-tools'
+                ? document.getElementById('tools')
+                : document.getElementById('available-tools');
+            parent.appendChild(div);
+        });
+    } else {
+        div.classList.add('required');
+    }
     return div;
 }
 
 function setupTools() {
     const avail = document.getElementById('available-tools');
+    const active = document.getElementById('tools');
     avail.innerHTML = '';
-    availableTools.forEach(t => avail.appendChild(makeTool(t)));
+    active.innerHTML = '';
+
+    availableTools.forEach(t => {
+        const elem = makeTool(t);
+        if (t.required) {
+            active.appendChild(elem);
+        } else {
+            avail.appendChild(elem);
+        }
+    });
 
     const areas = [document.getElementById('available-tools'), document.getElementById('tools')];
     areas.forEach(area => {
@@ -30,7 +46,7 @@ function setupTools() {
             e.preventDefault();
             const name = e.dataTransfer.getData('text/plain');
             const tool = [...document.querySelectorAll('.tool')].find(d => d.dataset.name === name);
-            if (tool) {
+            if (tool && tool.dataset.required !== 'true') {
                 area.appendChild(tool);
             }
         });
