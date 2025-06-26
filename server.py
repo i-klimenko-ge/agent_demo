@@ -8,12 +8,14 @@ app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 TOOLS = [
-    {"name": "calculator", "label": "калькулятор"},
-    {"name": "web_search", "label": "поиск в интернете"},
-    {"name": "docs_search", "label": "поиск в документации"},
-    {"name": "page_view", "label": "просмотр страниц"},
-    {"name": "user_reply", "label": "ответ пользователю"},
+    {"name": "calculator", "label": "калькулятор", "required": False},
+    {"name": "web_search", "label": "поиск в интернете", "required": False},
+    {"name": "docs_search", "label": "поиск в документации", "required": False},
+    {"name": "page_view", "label": "просмотр страниц", "required": False},
+    {"name": "user_reply", "label": "ответ пользователю", "required": True},
 ]
+
+REQUIRED_TOOLS = [t["name"] for t in TOOLS if t.get("required")]
 
 with open("static/index.html", "r") as f:
     index_html = f.read()
@@ -35,7 +37,9 @@ async def websocket_endpoint(websocket: WebSocket):
             data = await websocket.receive_text()
             payload = json.loads(data)
             user_msg = payload.get("userMsg", "")
-            tools = ", ".join(payload.get("tools", [])) or "none"
+            tools_list = payload.get("tools", [])
+            tools_list = list(dict.fromkeys(tools_list + REQUIRED_TOOLS))
+            tools = ", ".join(tools_list) or "none"
             system_prompt = payload.get("systemPrompt", "")
             extra_prompt = payload.get("extraPrompt", "")
             lines = [
