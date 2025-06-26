@@ -5,11 +5,17 @@ function makeTool(tool) {
     div.className = 'tool';
     div.textContent = tool.label;
     div.dataset.name = tool.name;
-    div.draggable = true;
+    div.dataset.required = tool.required ? 'true' : 'false';
+    div.draggable = !tool.required;
     div.addEventListener('dragstart', e => {
+        if (tool.required) {
+            e.preventDefault();
+            return;
+        }
         e.dataTransfer.setData('text/plain', tool.name);
     });
     div.addEventListener('click', () => {
+        if (tool.required) return;
         const parent = div.parentElement.id === 'available-tools'
             ? document.getElementById('tools')
             : document.getElementById('available-tools');
@@ -20,8 +26,17 @@ function makeTool(tool) {
 
 function setupTools() {
     const avail = document.getElementById('available-tools');
+    const selected = document.getElementById('tools');
     avail.innerHTML = '';
-    availableTools.forEach(t => avail.appendChild(makeTool(t)));
+    selected.innerHTML = '';
+    availableTools.forEach(t => {
+        const div = makeTool(t);
+        if (t.required) {
+            selected.appendChild(div);
+        } else {
+            avail.appendChild(div);
+        }
+    });
 
     const areas = [document.getElementById('available-tools'), document.getElementById('tools')];
     areas.forEach(area => {
@@ -31,6 +46,9 @@ function setupTools() {
             const name = e.dataTransfer.getData('text/plain');
             const tool = [...document.querySelectorAll('.tool')].find(d => d.dataset.name === name);
             if (tool) {
+                if (tool.dataset.required === 'true' && area.id === 'available-tools') {
+                    return;
+                }
                 area.appendChild(tool);
             }
         });
