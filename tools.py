@@ -49,8 +49,12 @@ import datetime
 # ─── Current Date ───
 @tool
 def current_date_tool() -> dict:
-    """Возвращает текущую дату в формате ГГГГ-ММ-ДД."""
-    return {"date": datetime.datetime.now().strftime("%Y-%m-%d")}
+    """Возвращает текущую дату в формате ГГГГ-ММ-ДД и день недели (на англ.)."""
+    now = datetime.datetime.now()
+    return {
+        "date":       now.strftime("%Y-%m-%d"),
+        "day_of_week": now.strftime("%A")
+    }
 
 import math
 
