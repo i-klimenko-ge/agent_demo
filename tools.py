@@ -66,9 +66,6 @@ def calculator_tool(expression: Annotated[str, "Выражение для выч
         return {"error": str(e)}
 
 
-import smtplib
-from email.mime.text import MIMEText
-
 @tool
 def send_email_tool(
     recipient: Annotated[str, "email получателя"],
