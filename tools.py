@@ -9,7 +9,7 @@ RAG_SOURCE = FaissRagSource("docs", "Официальная документац
 
 @tool
 def search_rag_tool(query: Annotated[str, "запрос для поиска"]) -> dict:
-    """Выполнить поиск в документации по электронному документообороту"""
+    """Выполнить поиск в документации по электронному документообороту (SberDocs или СберДокс)."""
     resp: dict = RAG_SOURCE.query(query)
     return {"result": resp}
 
