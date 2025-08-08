@@ -40,6 +40,6 @@ if __name__ == "__main__":
     import io
     from PIL import Image
 
-    imageStream = io.BytesIO(graph.get_graph().draw_mermaid_png())
+    imageStream = io.BytesIO(get_graph().get_graph().draw_mermaid_png())
     imageFile = Image.open(imageStream)
     imageFile.save('graph.jpg')

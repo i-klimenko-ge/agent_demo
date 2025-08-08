@@ -3,9 +3,7 @@ from langchain_core.messages import ToolMessage, SystemMessage, HumanMessage
 from langchain_core.runnables import RunnableConfig
 from state import AgentState
 from tools import (
-    provide_answer_tool,
-    question_user_tool,
-    search_rag_tool,
+    response_tool,
     read_webpage_tool,
     current_date_tool,
     calculator_tool,
@@ -18,9 +16,7 @@ from prompts import create_system_prompt, get_react_instructions
 tools_by_name = {
     tool.name: tool
     for tool in [
-        provide_answer_tool,
-        question_user_tool,
-        search_rag_tool,
+        response_tool,
         read_webpage_tool,
         current_date_tool,
         calculator_tool,
@@ -55,27 +51,13 @@ def use_tool_node(state: AgentState, tools_by_name):
 
     for call in last.tool_calls:
         result = tools_by_name[call["name"]].invoke(call["args"])
-        if call["name"] == 'question_user_tool':
-            outputs.append(
-                ToolMessage(
-                    content="Выполнено обращение к пользователю.",
-                    name=call["name"],
-                    tool_call_id=call["id"],
-                )
+        outputs.append(
+            ToolMessage(
+                content=json.dumps(result, ensure_ascii=False),
+                name=call["name"],
+                tool_call_id=call["id"],
             )
-            outputs.append(
-                HumanMessage(
-                    content=result["answer"]
-                )
-            )
-        else:
-            outputs.append(
-                ToolMessage(
-                    content=json.dumps(result, ensure_ascii=False),
-                    name=call["name"],
-                    tool_call_id=call["id"],
-                )
-            )
+        )
     return {"messages": outputs}
 
 def should_use_tool(state: AgentState):
