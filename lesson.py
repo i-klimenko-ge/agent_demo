@@ -3,6 +3,7 @@ from langchain_core.messages import HumanMessage, AIMessage
 from dotenv import load_dotenv
 load_dotenv()
 
+import json
 from colorama import init, Fore, Style
 from graph import get_graph
 import os
@@ -65,14 +66,14 @@ while True:
     for step in stream:
         msg = step["messages"][-1]
         try:
-            # TODO: for first and last message. Maybe it shold made another way
             if msg in conversation["messages"]:
-                continue
-            if msg.name in ["response_tool", "question_user_tool"]:
                 continue
 
             if isinstance(msg, AIMessage):
                 print(f"{Fore.YELLOW}{msg.content}{Style.RESET_ALL}")
+            elif getattr(msg, "name", "") == "response_tool":
+                data = json.loads(msg.content)
+                print(f"{Fore.GREEN}{data.get('answer', '')}{Style.RESET_ALL}")
             else:
                 msg.pretty_print()
             conversation["messages"].append(msg)
