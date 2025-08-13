@@ -37,7 +37,7 @@ print("Tool names handed to graph:", [t.name for t in tools_list])
 
 model = model.bind_tools(tools_list)
 
-graph = get_graph(model)
+graph = get_graph(model, tools_list)
 
 prompt = None
 
