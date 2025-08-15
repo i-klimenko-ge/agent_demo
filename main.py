@@ -66,7 +66,6 @@ def create_agent(tool_names=None, tools_by_name=None):
         credentials=api_key,
         scope="GIGACHAT_API_CORP",
         model="GigaChat-2-Max",
-        base_url="https://gigachat-preview.devices.sberbank.ru/api/v1",
         verify_ssl_certs=False,
         profanity_check=False,
     )
