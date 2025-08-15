@@ -1,6 +1,7 @@
 *.pyc
 test*
 .env
-.vscode
+.vscode/*
+!.vscode/launch.json
 rag_sources
 .DS_Store
