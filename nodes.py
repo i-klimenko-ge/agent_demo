@@ -1,11 +1,8 @@
-import json
-from langchain_core.messages import ToolMessage, SystemMessage, HumanMessage
+from langchain_core.messages import SystemMessage
 from langchain_core.runnables import RunnableConfig
 from state import AgentState
 from tools import (
-    provide_answer_tool,
-    question_user_tool,
-    search_rag_tool,
+    response_tool,
     read_webpage_tool,
     current_date_tool,
     calculator_tool,
@@ -14,20 +11,15 @@ from tools import (
 )
 from prompts import create_system_prompt, get_react_instructions
 
-# Map name → tool
-tools_by_name = {
-    tool.name: tool
-    for tool in [
-        provide_answer_tool,
-        question_user_tool,
-        search_rag_tool,
-        read_webpage_tool,
-        current_date_tool,
-        calculator_tool,
-        send_email_tool,
-        search_tool,
-    ]
-}
+# List of available tools
+tools = [
+    response_tool,
+    read_webpage_tool,
+    current_date_tool,
+    calculator_tool,
+    send_email_tool,
+    search_tool,
+]
 
 def reflect_node(state: AgentState, config: RunnableConfig, model):
     """1) Reflect, plan & choose one tool call."""
@@ -47,36 +39,6 @@ def reflect_node(state: AgentState, config: RunnableConfig, model):
     response = model.invoke([system] + list(state["messages"]), config)
 
     return {"messages": [response]}
-
-def use_tool_node(state: AgentState, tools_by_name):
-    """2) Execute the tool call chosen in reflect_node."""
-    outputs = []
-    last = state["messages"][-1]
-
-    for call in last.tool_calls:
-        result = tools_by_name[call["name"]].invoke(call["args"])
-        if call["name"] == 'question_user_tool':
-            outputs.append(
-                ToolMessage(
-                    content="Выполнено обращение к пользователю.",
-                    name=call["name"],
-                    tool_call_id=call["id"],
-                )
-            )
-            outputs.append(
-                HumanMessage(
-                    content=result["answer"]
-                )
-            )
-        else:
-            outputs.append(
-                ToolMessage(
-                    content=json.dumps(result, ensure_ascii=False),
-                    name=call["name"],
-                    tool_call_id=call["id"],
-                )
-            )
-    return {"messages": outputs}
 
 def should_use_tool(state: AgentState):
     """If the last LLM output included a tool call, go to execute; otherwise end."""
