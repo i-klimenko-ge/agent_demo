@@ -16,18 +16,23 @@ from tools import (
 )
 
 try:
-    from mcp.server.fastapi import FastAPIServer
+    # The FastAPIServer class has been removed from newer versions of the
+    # `mcp` package in favour of the FastMCP helper. Import it if available so
+    # the server can be started automatically; otherwise, degrade gracefully so
+    # the rest of the application can still run without the optional
+    # dependency.
+    from mcp.server.fastmcp import FastMCP
 except ImportError:  # pragma: no cover - optional dependency for tests
-    FastAPIServer = None  # type: ignore
+    FastMCP = None  # type: ignore
 
 
 def _run_server() -> None:
     """Create and run the MCP server in the current thread."""
-    if FastAPIServer is None:
+    if FastMCP is None:
         print("MCP package not installed. MCP server not started.")
         return
 
-    server = FastAPIServer("agent-demo")
+    server = FastMCP("agent-demo")
 
     # Register every tool defined in tools.py so clients can invoke them.
     for tool in [
@@ -38,10 +43,11 @@ def _run_server() -> None:
         send_email_tool,
         search_tool,
     ]:
-        server.register_tool(tool)
+        # `FastMCP.tool()` returns a decorator that registers the function.
+        server.tool()(tool)
 
     # Start serving (blocking call).
-    server.run()
+    server.run(transport="stdio")
 
 
 # Launch the server in a background thread during module import so that
