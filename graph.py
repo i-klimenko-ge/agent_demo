@@ -1,8 +1,8 @@
 from langgraph.graph import StateGraph, END
-from langgraph.prebuilt import ToolNode
 from state import AgentState
 from nodes import reflect_node, should_use_tool, tools as default_tools
 from functools import partial
+from mcp_tool_node import MCPToolNode
 
 def get_graph(model, tools=None):
     if tools is None:
@@ -11,7 +11,7 @@ def get_graph(model, tools=None):
     workflow = StateGraph(AgentState)
 
     reflect_with_tools = partial(reflect_node, model=model)
-    tool_node = ToolNode(tools)
+    tool_node = MCPToolNode(tools)
 
     # Step 1: reflect (plan & choose action)
     workflow.add_node("reflect", reflect_with_tools)

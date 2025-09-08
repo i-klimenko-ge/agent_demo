@@ -1,25 +1,16 @@
 from langchain_core.messages import SystemMessage
 from langchain_core.runnables import RunnableConfig
 from state import AgentState
-from tools import (
-    response_tool,
-    read_webpage_tool,
-    current_date_tool,
-    calculator_tool,
-    send_email_tool,
-    search_tool,
-)
 from prompts import create_system_prompt, get_react_instructions
 
-# List of available tools
-tools = [
-    response_tool,
-    read_webpage_tool,
-    current_date_tool,
-    calculator_tool,
-    send_email_tool,
-    search_tool,
-]
+# Retrieve tool descriptors from an MCP server instead of using local functions
+try:  # pragma: no cover - optional dependency
+    from mcp.client.fastapi import FastAPIClient
+
+    _client = FastAPIClient("http://localhost:8000")
+    tools = _client.list_tools()
+except Exception:  # pragma: no cover - gracefully handle missing client
+    tools = []
 
 def reflect_node(state: AgentState, config: RunnableConfig, model):
     """1) Reflect, plan & choose one tool call."""
