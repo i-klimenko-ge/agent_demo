@@ -5,6 +5,7 @@ It starts automatically when this module is imported so that external
 MCP-capable clients can discover the available tools.
 """
 import threading
+from mcp.server.fastmcp import FastMCP
 
 from tools import (
     response_tool,
@@ -14,16 +15,6 @@ from tools import (
     send_email_tool,
     search_tool,
 )
-
-try:
-    # The FastAPIServer class has been removed from newer versions of the
-    # `mcp` package in favour of the FastMCP helper. Import it if available so
-    # the server can be started automatically; otherwise, degrade gracefully so
-    # the rest of the application can still run without the optional
-    # dependency.
-    from mcp.server.fastmcp import FastMCP
-except ImportError:  # pragma: no cover - optional dependency for tests
-    FastMCP = None  # type: ignore
 
 
 def _run_server() -> None:
