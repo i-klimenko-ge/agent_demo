@@ -10,7 +10,33 @@ from colorama import init, Fore, Style
 from graph import get_graph
 import os
 from langchain_gigachat import GigaChat
-from tools import response_tool, read_webpage_tool, current_date_tool, calculator_tool, search_tool
+
+# Try to load tool definitions from a running MCP server using the
+# official LangChain MCP adapter. If the adapter or server is not
+# available, fall back to the local tool implementations.
+try:  # pragma: no cover - optional dependency
+    from langchain_mcp import MCPToolkit
+
+    toolkit = MCPToolkit(base_url="http://localhost:8000")
+    tools_list = toolkit.get_tools()
+    print("Loaded tools via MCPToolkit")
+except Exception:  # pragma: no cover - gracefully handle missing adapter
+    from tools import (
+        response_tool,
+        read_webpage_tool,
+        current_date_tool,
+        calculator_tool,
+        search_tool,
+    )
+
+    tools_list = [
+        response_tool,       # Для коммуникации с пользователем
+        search_tool,         # Искать в интернете
+        read_webpage_tool,   # Просмотреть содержимое страницы
+        current_date_tool,   # Узнать текущую дату
+        calculator_tool,     # Калькулятор
+    ]
+    print("MCPToolkit not available, using local tools")
 
 
 # Получаем ключ
@@ -26,14 +52,6 @@ model = GigaChat(
             verify_ssl_certs=False,
             profanity_check=False
         )
-
-tools_list = [
-    response_tool,       # Для коммуникации с пользователем
-    search_tool,         # Искать в интернете
-    read_webpage_tool,   # Просмотреть содержимое страницы
-    current_date_tool,   # Узнать текущую дату
-    calculator_tool,     # Калькулятор
-]
 
 print("Tool names handed to graph:", [t.name for t in tools_list])
 
