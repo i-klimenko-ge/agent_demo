@@ -3,6 +3,8 @@ from langchain_core.messages import HumanMessage, AIMessage
 from dotenv import load_dotenv
 load_dotenv()
 
+import mcp_server  # start MCP server for external clients
+
 import json
 from colorama import init, Fore, Style
 from graph import get_graph
