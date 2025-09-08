@@ -9,6 +9,8 @@ import json
 from colorama import init, Fore, Style
 from graph import get_graph
 import os
+import requests
+from langchain_core.tools import tool
 from langchain_gigachat import GigaChat
 from tools import response_tool, read_webpage_tool, current_date_tool, calculator_tool, search_tool
 
@@ -27,6 +29,7 @@ model = GigaChat(
             profanity_check=False
         )
 
+# Создаём список локальных инструментов для описания модели
 tools_list = [
     response_tool,       # Для коммуникации с пользователем
     search_tool,         # Искать в интернете
@@ -35,11 +38,46 @@ tools_list = [
     calculator_tool,     # Калькулятор
 ]
 
-print("Tool names handed to graph:", [t.name for t in tools_list])
+# --- MCP client setup ---
+class MCPClient:
+    """Minimal HTTP client for calling tools exposed by the MCP server."""
 
+    def __init__(self, base_url: str) -> None:
+        self.base_url = base_url.rstrip("/")
+
+    def call_tool(self, name: str, payload: dict) -> dict:
+        """Invoke a remote tool through the MCP server."""
+        try:
+            resp = requests.post(f"{self.base_url}/tools/{name}", json=payload)
+            resp.raise_for_status()
+            return resp.json()
+        except Exception as e:  # pragma: no cover - network failure
+            return {"error": str(e)}
+
+
+mcp_server_url = os.getenv("MCP_SERVER_URL", "http://localhost:8000")
+mcp_client = MCPClient(mcp_server_url)
+
+
+def make_mcp_tool(t):
+    """Wrap a tool so execution is routed through the MCP client."""
+
+    @tool(name=t.name, description=getattr(t, "description", ""), args_schema=getattr(t, "args_schema", None))
+    def _remote_tool(**kwargs):
+        return mcp_client.call_tool(t.name, kwargs)
+
+    return _remote_tool
+
+
+# Подменяем инструменты на прокси, вызывающие MCP сервер
+mcp_tools = [make_mcp_tool(t) for t in tools_list]
+
+print("Tool names handed to graph:", [t.name for t in mcp_tools])
+
+# Модель знает описание инструментов, но выполнение происходит через MCP
 model = model.bind_tools(tools_list)
 
-graph = get_graph(model, tools_list)
+graph = get_graph(model, mcp_tools)
 
 prompt = None
 
