@@ -1,35 +1,20 @@
-from langgraph.graph import StateGraph, END
-from langgraph.prebuilt import ToolNode
+from langgraph.graph import StateGraph
 from state import AgentState
-from nodes import reflect_node, should_use_tool, tools as default_tools
+from nodes import reflect_node, execute_tool_node
 from functools import partial
 
-def get_graph(model, tools=None):
-    if tools is None:
-        tools = default_tools
-
+def get_graph(model):
     workflow = StateGraph(AgentState)
 
-    reflect_with_tools = partial(reflect_node, model=model)
-    tool_node = ToolNode(tools)
+    reflect_with_model = partial(reflect_node, model=model)
 
     # Step 1: reflect (plan & choose action)
-    workflow.add_node("reflect", reflect_with_tools)
+    workflow.add_node("reflect", reflect_with_model)
     # Step 2: execute (call the chosen tool)
-    workflow.add_node("use_tool", tool_node)
+    workflow.add_node("use_tool", execute_tool_node)
 
     # Start by reflecting
     workflow.set_entry_point("reflect")
-
-    # If reflect_node emits a tool_call → go execute; else finish
-    workflow.add_conditional_edges(
-        "reflect",
-        should_use_tool,
-        {"use_tool": "use_tool", "end": END},
-    )
-
-    # After executing, loop back to planning
-    workflow.add_edge("use_tool", "reflect")
 
     # Compile for use
     graph = workflow.compile()
